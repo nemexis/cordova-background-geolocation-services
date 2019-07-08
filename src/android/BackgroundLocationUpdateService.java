@@ -19,10 +19,12 @@ import android.telephony.CellLocation;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
+import android.app.NotificationChannel;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.Activity;
+
 
 import android.content.Context;
 import android.content.Intent;
@@ -225,7 +227,46 @@ public class BackgroundLocationUpdateService
 
             Notification notification;
             if (android.os.Build.VERSION.SDK_INT >= 16) {
-                notification = buildForegroundNotification(builder);
+                
+                
+                 if (android.os.Build.VERSION.SDK_INT >= 27) {
+			        String NOTIFICATION_CHANNEL_ID = "backposchannel";
+			    	String channelName = "My Background Service";
+			    	
+			    	NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			    	assert manager != null;
+			    	
+			    	
+			    	NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, manager.IMPORTANCE_MIN);
+			    	// chan.setLightColor(Color.BLUE);
+			    	// chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+			    	
+			    	manager.createNotificationChannel(chan);
+			    	
+			    	
+			    	Notification.Builder notificationBuilder = new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+		    		notificationBuilder.setOngoing(true);
+		    		notificationBuilder.setContentTitle(notificationTitle);
+            		notificationBuilder.setContentText(notificationText);
+            		notificationBuilder.setSmallIcon(context.getApplicationInfo().icon);
+		            notificationBuilder.setPriority(manager.IMPORTANCE_MIN);
+		            
+		            if(scaledBm != null) {
+              			notificationBuilder.setLargeIcon(scaledBm);
+            		}	
+		            	
+		            	
+		            notification = notificationBuilder.build();	
+		            
+            
+		            
+		        }else{
+        
+                
+                	notification = buildForegroundNotification(builder);
+                }
+                
+                
             } else {
                 notification = buildForegroundNotificationCompat(builder);
             }
@@ -581,7 +622,10 @@ public class BackgroundLocationUpdateService
 
     @TargetApi(16)
     private Notification buildForegroundNotification(Notification.Builder builder) {
-        return builder.build();
+        
+       
+       	return builder.build();
+        
     }
 
     @SuppressWarnings("deprecation")
