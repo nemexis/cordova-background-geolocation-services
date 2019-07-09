@@ -229,7 +229,7 @@ public class BackgroundLocationUpdateService
             if (android.os.Build.VERSION.SDK_INT >= 16) {
                 
                 
-                 if (android.os.Build.VERSION.SDK_INT >= 27) {
+                 if (android.os.Build.VERSION.SDK_INT >= 26) {
 			        String NOTIFICATION_CHANNEL_ID = "backposchannel";
 			    	String channelName = "My Background Service";
 			    	
