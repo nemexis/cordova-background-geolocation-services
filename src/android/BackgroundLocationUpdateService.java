@@ -141,10 +141,12 @@ public class BackgroundLocationUpdateService
         connectivityManager     = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
 
         // Location Update PI
+        Log.w(TAG, "Constants LOCATION_UPDATE: " + Constants.LOCATION_UPDATE);
         Intent locationUpdateIntent = new Intent(Constants.LOCATION_UPDATE);
         locationUpdatePI = PendingIntent.getBroadcast(this, 9001, locationUpdateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         registerReceiver(locationUpdateReceiver, new IntentFilter(Constants.LOCATION_UPDATE));
 
+		Log.w(TAG, "Constants DETECTED_ACTIVITY_UPDATE: " + Constants.DETECTED_ACTIVITY_UPDATE);
         Intent detectedActivitiesIntent = new Intent(Constants.DETECTED_ACTIVITY_UPDATE);
         detectedActivitiesPI = PendingIntent.getBroadcast(this, 9002, detectedActivitiesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         registerReceiver(detectedActivitiesReceiver, new IntentFilter(Constants.DETECTED_ACTIVITY_UPDATE));
@@ -183,6 +185,7 @@ public class BackgroundLocationUpdateService
 
 
             // Build the notification / pending intent
+            Log.w(TAG, "BackgroundLocationServicesPlugin class:" + BackgroundLocationServicesPlugin.class);
             Intent main = new Intent(this, BackgroundLocationServicesPlugin.class);
             main.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, main,  PendingIntent.FLAG_UPDATE_CURRENT);
@@ -478,16 +481,19 @@ public class BackgroundLocationUpdateService
     }
 
     private void attachDARecorder() {
+      Log.w(TAG, "attachDARecorder");
       if (detectedActivitiesAPI == null) {
+      	  Log.w(TAG, "detectedActivitiesAPI null");
           buildDAClient();
       } else if (detectedActivitiesAPI.isConnected()) {
+      	Log.w(TAG, "detectedActivitiesAPI Connected");
         ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(
                         detectedActivitiesAPI,
                         this.activitiesInterval,
                         detectedActivitiesPI
                 );
           if(isDebugging) {
-              Log.d(TAG, "- DA RECORDER attached - start recording location updates");
+              Log.w(TAG, "- DA RECORDER attached - start recording location updates");
           }
       } else {
         Log.i(TAG, "NOT CONNECTED, CONNECT");
@@ -668,7 +674,7 @@ public class BackgroundLocationUpdateService
 
     @Override
     public boolean stopService(Intent intent) {
-        Log.i(TAG, "- Received stop: " + intent);
+        Log.w(TAG, "- Received stop: " + intent);
         this.stopRecording();
         this.cleanUp();
 
@@ -683,32 +689,46 @@ public class BackgroundLocationUpdateService
         super.onDestroy();
     }
 
+	
+    
     private void cleanUp() {
         try {
             unregisterReceiver(locationUpdateReceiver);
+            Log.w(TAG, "unregisterReceiver - locationUpdateReceiver : OK");
+            
+            unregisterReceiver(startAggressiveReceiver);
+            Log.w(TAG, "unregisterReceiver - startAggressiveReceiver : OK");
+            
             unregisterReceiver(startRecordingReceiver);
+            Log.w(TAG, "unregisterReceiver - startRecordingReceiver : OK");
             unregisterReceiver(stopRecordingReceiver);
+            Log.w(TAG, "unregisterReceiver - stopRecordingReceiver : OK");
             unregisterReceiver(detectedActivitiesReceiver);
+            Log.w(TAG, "unregisterReceiver - detectedActivitiesReceiver : OK");
         } catch(IllegalArgumentException e) {
                Log.e(TAG, "Error: Could not unregister receiver", e);
         }
 
         try {
             stopForeground(true);
+            Log.w(TAG, "stopForeground : OK");
         } catch (Exception e) {
             Log.e(TAG, "Error: Could not stop foreground process", e);
         }
 
 
         toneGenerator.release();
+        Log.w(TAG, "toneGenerator.release : OK");
         if(locationClientAPI != null) {
             locationClientAPI.disconnect();
+            Log.w(TAG, "locationClientAPI.disconnect : OK");
         }
-
+		Log.w(TAG, "cleanUp completed OK");
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+     	Log.w(TAG, "onTaskRemoved");
         this.stopRecording();
         this.stopSelf();
         super.onTaskRemoved(rootIntent);
